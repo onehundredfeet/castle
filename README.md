@@ -1,6 +1,19 @@
+**Important Note:** This is a derivative of https://github.com/ncannasse/castle .  The UI functionality has been stripped out leaving only the DB code.
+
+
+This branch implements additional features:
+- Curves
+- 1,2,3,4 Dimensional floating point vectors
+
+This branch removes the following features:
+- Castle UI
+- SQL Connection Stubs
+
 CastleDB
 ========
 <a href="http://castledb.org"><img src="http://castledb.org/img/icon_hd.png" align=right /></a>
+
+
 
 **Important Note:** CastleDB editor has been rewritten to be integrated with [HIDE](https://github.com/heapsio/hide). Castle library is still being developped but the editor here is legacy.
 

@@ -1,8 +1,0 @@
--cp src
--js bin/castle.js
--main Main
--lib hxnodejs
--lib hx3compat
--lib format
--lib hxbit
--D lz4js

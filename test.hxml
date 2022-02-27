@@ -1,0 +1,6 @@
+-cp src
+-js bin/castle.js
+-main test.Test
+-lib format
+-lib tink_macro
+-D lz4js
