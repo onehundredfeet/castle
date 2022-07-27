@@ -798,7 +798,7 @@ class Database {
 			id = val;
 			args = [];
 		} else {
-			id = val.substr(0, pos + 1);
+			id = val.substr(0, pos);
 			val = val.substr(pos + 1);
 
 			if( StringTools.endsWith(val, ")") )
@@ -839,6 +839,7 @@ class Database {
 		}
 
 		var cidx : Int = -1;
+
 		for( i in 0...t.cases.length ) {
 			var c = t.cases[i];
 			if( c.name == id ) {
@@ -850,7 +851,10 @@ class Database {
 			cidx = Std.parseInt(id);
 		}
 
-		if (cidx >= t.cases.length) {
+		if (cidx == null) {
+			throw 'Can not find case index ${cidx} from ${id} from ${val}';
+		}
+		else if (cidx >= t.cases.length) {
 			throw "Type id out of range | Format - id (parameters)"; 
 		} else if (cidx <0) {
 			throw "Unkown value '" + id + "' | Format - id (parameters)";
