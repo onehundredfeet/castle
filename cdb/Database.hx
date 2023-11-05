@@ -234,29 +234,15 @@ class Database {
 		// process
 		for( s in sheets ) {
 			// clean props
+			if( s.props.hasGroup ) {
+				var lines = s.getLines();
+				for( l in lines )
+					if( l.group != null )
+						Reflect.deleteField(l,"group");
+			}
 			for( p in Reflect.fields(s.props) ) {
 				var v : Dynamic = Reflect.field(s.props, p);
 				if( v == null || v == false ) Reflect.deleteField(s.props, p);
-			}
-			if( s.props.hasGroup ) {
-				var lines = s.getLines();
-				var gid = 0;
-				var sindex = 0;
-				// skip first if at head
-				while( true ) {
-					var s = s.separators[sindex];
-					if( s == null || s.index != 0 || s.title == null ) break;
-					sindex++;
-				}
-				for( i in 0...lines.length ) {
-					while( true ) {
-						var s = s.separators[sindex];
-						if( s == null || s.index != i ) break;
-						if( s.title != null ) gid++;
-						sindex++;
-					}
-					lines[i].group = gid;
-				}
 			}
 		}
 		return cdb.Parser.save(data);
@@ -380,7 +366,7 @@ class Database {
 						switch( c.type ) {
 						case TList:
 							var v : Array<Dynamic> = v;
-							if( v.length == 0 )
+							if( v != null && v.length == 0 )
 								Reflect.deleteField(o, c.name);
 						case TProperties:
 							if( Reflect.fields(v).length == 0 || haxe.Json.stringify(v) == haxe.Json.stringify(def) )
@@ -575,6 +561,10 @@ class Database {
 						var def = getDefault(a);
 						f = function(v) return if( v == def ) null else oldf(v);
 					}
+				}
+				if( a.kind != b.kind ) {
+					a.kind = b.kind;
+					if( a.kind == null ) Reflect.deleteField(a,"kind");
 				}
 				var index = Lambda.indexOf(p.b.args, b);
 				conv.args[Lambda.indexOf(p.a.args, a)] = function(v) return { v = f(v); return if( v == null && b.opt ) null else { index : index, v : v }; };
@@ -925,6 +915,7 @@ class Database {
 					var k = "";
 					if( a.opt ) k += "?";
 					k += a.name + " : " + typeStr(a.type);
+					if( a.kind == TypeKind ) k += "Kind";
 					out.push(k);
 				}
 				str += out.join(", ");
@@ -958,13 +949,17 @@ class Database {
 				for( arg in line.split(",") ) {
 					var tname = arg.split(":");
 					if( tname.length != 2 ) throw "Required name:type in '" + arg + "'";
-					var opt = false;
+					var opt = false, isKind = false;
 					var id = StringTools.trim(tname[0]);
 					if( id.charAt(0) == "?" ) {
 						opt = true;
 						id = StringTools.trim(id.substr(1));
 					}
 					var t = StringTools.trim(tname[1]);
+					if( StringTools.endsWith(t,"Kind") && getSheet(t.substr(0,-4)) != null ) {
+						isKind = true;
+						t = t.substr(0,-4);
+					}
 					if( !r_ident.match(id) )
 						throw "Invalid identifier " + id;
 					var c : Column = {
@@ -973,6 +968,7 @@ class Database {
 						typeStr : null,
 					};
 					if( opt ) c.opt = true;
+					if( isKind ) c.kind = TypeKind;
 					args.push(c);
 				}
 			}

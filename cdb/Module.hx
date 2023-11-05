@@ -25,6 +25,7 @@ class Module {
 	static function makeFakeEnum( tname : String, curMod, pos, values : Array<String> ) : haxe.macro.Expr.TypeDefinition {
 		var fields : Array<haxe.macro.Expr.Field> = [for( i in 0...values.length ) { name : values[i], pos : pos, kind : FVar(null, macro $v { i } ) } ];
 		var tint = macro : Int;
+		var tstring = macro : String;
 		fields.push( {
 			name : "COUNT",
 			pos : pos,
@@ -36,6 +37,30 @@ class Module {
 			pos : pos,
 			kind : FVar(null, macro $v { values } ),
 			access : [APublic, AStatic],
+		});
+		fields.push( {
+			name : "getName",
+			pos : pos,
+			kind : FFun( {
+				args : [],
+				ret : tstring,
+				expr : macro {
+					return NAMES[this];
+				}
+			}),
+			access : [APublic, AInline],
+		});
+		fields.push( {
+			name : "toString",
+			pos : pos,
+			kind : FFun( {
+				args : [],
+				ret : tstring,
+				expr : macro {
+					return NAMES[this];
+				}
+			}),
+			access : [APublic, AInline],
 		});
 		fields.push( {
 			name : "ofInt",
@@ -519,15 +544,50 @@ typedef Float4 = {
 				name : tname,
 				pack : curMod,
 				kind : TDAbstract(def.toComplex()),
+				meta : [{ name : ":cdb", params : [], pos : pos }],
 				fields : fields,
 			});
 		}
+
+		var customRef = new Map();
+		for( t in data.customTypes ) {
+			var hasRef = false;
+			for( c in t.cases ) {
+				for( a in c.args ) {
+					switch( a.type ) {
+					case TRef(_): hasRef = true;
+					default:
+					}
+				}
+			}
+			if( hasRef ) customRef.set(t.name, true);
+		}
+		var changed = true;
+		while( changed ) {
+			changed = false;
+			for( t in data.customTypes ) {
+				if( customRef.exists(t.name) )
+					continue;
+				for( c in t.cases ) {
+					for( a in c.args ) {
+						switch( a.type ) {
+						case TCustom(name) if( customRef.exists(name) ):
+							customRef.set(t.name, true);
+							changed = true;
+						default:
+						}
+					}
+				}
+			}
+		}
+
 		for( t in data.customTypes ) {
 			types.push( {
 				pos : pos,
 				name : t.name,
 				pack : curMod,
 				kind : TDEnum,
+				meta : customRef.exists(t.name) ? [{ name : ":cdb", params : [], pos : pos }] : [],
 				fields : [for( c in t.cases )
 				{
 					name : c.name,
@@ -543,7 +603,7 @@ typedef Float4 = {
 								case TString: macro : String;
 								case TBool: macro : Bool;
 								case TCustom(name): name.toComplex();
-								case TRef(name): makeTypeName(name).toComplex();
+								case TRef(name): (makeTypeName(name) + (a.kind == TypeKind ? "Kind" : "")).toComplex();
 								default: throw "TODO " + a.type;
 								}
 								{
@@ -572,6 +632,8 @@ typedef Float4 = {
 							macro { var tmp = v[$v{ai+1}]; tmp == null ? null : $i{id+"Builder"}.build(tmp); }
 						else
 							macro $i{id+"Builder"}.build(v[$v{ai+1}]);
+					case TRef(_) if( a.kind == TypeKind ):
+						macro v[$v { ai + 1 } ];
 					case TRef(s):
 						var fname = fieldName(s);
 						macro $i{modName}.$fname.resolve(v[$v{ai+1}]);
