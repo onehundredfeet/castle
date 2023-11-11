@@ -17,7 +17,6 @@ package cdb;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 using haxe.macro.Tools;
-import tink.macro.Exprs;
 
 class Module {
 
@@ -86,8 +85,8 @@ class Module {
 			pos : pos,
 			name : tname,
 			pack : curMod,
-			kind : TDAbstract(tint),
-			meta : [{ name : ":enum", pos : pos },{ name : ":fakeEnum", pos : pos }],
+			kind : TDAbstract(tint, [AbEnum]),
+			meta : [{ name : ":fakeEnum", pos : pos }],
 			fields : fields,
 		};
 	}
@@ -516,8 +515,8 @@ typedef Float4 = {
 					pos : pos,
 					name : tkind,
 					pack : curMod,
-					meta : [{ name : ":enum", pos : pos },{ name : ":fakeEnum", pos : pos }],
-					kind : TDAbstract(macro : String),
+					meta : [{ name : ":fakeEnum", pos : pos }],
+					kind : TDAbstract(macro : String, [AbEnum]),
 					fields : ids,
 				});
 			} else {

@@ -5,6 +5,5 @@
 	"contributors" : ["ncannasse", "onehundredfeet"],
     "description" : "CastleDB support for Haxe",
     "version" : "1.6.1",
-	"releasenote" : "Fork from castle.  Removed UI. Added curves & vectors",
-	"dependencies": {"tink_macro": ""}
+	"releasenote" : "Fork from castle.  Removed UI. Added curves & vectors"
 }
