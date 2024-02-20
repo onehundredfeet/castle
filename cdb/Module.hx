@@ -85,8 +85,12 @@ class Module {
 			pos : pos,
 			name : tname,
 			pack : curMod,
-			kind : TDAbstract(tint, [AbEnum]),
-			meta : [{ name : ":fakeEnum", pos : pos }],
+			#if( haxe >= version("4.3.3") )
+			kind : TDAbstract(tint,[AbEnum]),
+			#else
+			kind : TDAbstract(tint),
+			meta : [{ name : ":enum", pos : pos },{ name : ":fakeEnum", pos : pos }],
+			#end
 			fields : fields,
 		};
 	}
@@ -516,7 +520,12 @@ typedef Float4 = {
 					name : tkind,
 					pack : curMod,
 					meta : [{ name : ":fakeEnum", pos : pos }],
+					#if( haxe >= version("4.3.3") )
 					kind : TDAbstract(macro : String, [AbEnum]),
+					#else
+					meta : [{ name : ":enum", pos : pos },{ name : ":fakeEnum", pos : pos }],
+					kind : TDAbstract(macro : String),
+					#end
 					fields : ids,
 				});
 			} else {
